@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Overview
+## Overview
 
 - Built-in support for TCP connections (UDP planned)
 - Supports multiple clients using threads
@@ -14,11 +14,11 @@
 
 ---
 
-## 📘 Classes & Functions
+## Classes & Functions
 
 ---
 
-### 🏢 `class Server`
+### `class Server`
 
 **Main server class** that manages connections, handles client data, and sends responses.
 
@@ -67,7 +67,7 @@ server.broadcast({"type": "event", "name": "game_start"})
 
 ---
 
-### 💻 `class Client`
+### `class Client`
 
 Handles connection to the server, data sending, and optionally receives incoming data using a callback function.
 
@@ -133,7 +133,7 @@ threading.Thread(target=client.receive, daemon=True).start()
 
 ---
 
-## 📌 Example Usage
+## Example Usage
 
 ```python
 # Server-side
