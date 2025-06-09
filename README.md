@@ -90,7 +90,7 @@ Client(host, port, max_data_receive, on_receive=None)
   Closes the connection to the server.
 
 #### Internal Methods (for internal use only, do not call directly)
-- `receive()`: Receives messages from the server and processes them using the callback function if provided.
+- `receive()`: Receives data from the server and processes it using the callback function if provided.
 
 ---
 
