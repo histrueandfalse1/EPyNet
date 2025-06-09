@@ -8,26 +8,22 @@
 
 - Built-in support for TCP connections (UDP not currently supported)
 - Handles multiple clients using background threads
-- Uses `pickle` for Python object serialization
+- Uses `json` for Python object serialization (safe for basic types)
 - Callback-based data reception on both server and client
 - Simple interface for sending and broadcasting data
 
 ---
 
-## Classes, Functions & Variables
-
----
+## Classes & Important Variables
 
 ### `class Server`
-
-**Main server class** that manages connections, handles client data, and sends responses.
+**Description:**  
+Main server class that manages TCP connections, handles client data, and sends responses.
 
 #### Constructor
-
 ```python
 Server(host, port, max_data_size, max_conn=5, mode="TCP", on_receive=None)
 ```
-
 | Parameter        | Type       | Description |
 |------------------|------------|-------------|
 | `host`           | `str`      | IP address to bind the server to (e.g., `"127.0.0.1"`) |
@@ -39,60 +35,40 @@ Server(host, port, max_data_size, max_conn=5, mode="TCP", on_receive=None)
 
 > Automatically starts listening for connections in a background thread.
 
----
+#### Methods
 
-#### `send(address, data)`
+- **`send(address, data)`**  
+  Sends data (must be JSON-serializable) to a specific connected client.
+  ```python
+  server.send(("127.0.0.1", 5000), {"type": "chat", "message": "Hello!"})
+  ```
 
-Sends data to a specific connected client.
+- **`broadcast(data)`**  
+  Sends the same data to all connected clients.
+  ```python
+  server.broadcast({"type": "event", "name": "game_start"})
+  ```
 
-```python
-server.send(("127.0.0.1", 5000), {"type": "chat", "message": "Hello!"})
-```
+- **`close()`**  
+  Closes all client connections and the server socket.
 
-- **`address`**: A tuple `(host, port)` identifying the client.
-- **`data`**: Any Python object that can be serialized with `pickle`.
+- **`C_sockets`**  
+  A list containing connected clients, formatted as: `(socket, (ip, port))`.
 
----
-
-#### `broadcast(data)`
-
-Sends the same data to all connected clients.
-
-```python
-server.broadcast({"type": "event", "name": "game_start"})
-```
-
-- **`data`**: A serializable Python object.
-- Sends the object to every client currently connected.
-
----
-
-#### `C_sockets`
-A list containing connected clients, formatted as such:
-`(socket,(ip,port))`
-
-#### Internal Methods (do not call manually)
-
-These methods are part of the internal operation of the server:
-
-- `accept_conns(self)`: Starts a thread that accepts incoming client connections.  
-  *Process function – not to be called manually.*
-
-- `handle_client(self, cs, ca)`: Handles communication with a connected client.  
-  *Process function – not to be called manually.*
+#### Internal Methods (for internal use only, do not call directly)
+- `accept_conns(self)`: Accepts incoming client connections in a background thread.
+- `handle_client(self, cs, ca)`: Handles communication with a connected client.
 
 ---
 
 ### `class Client`
-
+**Description:**  
 Handles connection to the server, data sending, and optionally receives incoming data using a callback function.
 
 #### Constructor
-
 ```python
 Client(host, port, max_data_receive, on_receive=None)
 ```
-
 | Parameter             | Type       | Description |
 |-----------------------|------------|-------------|
 | `host`                | `str`      | Server IP address |
@@ -102,40 +78,30 @@ Client(host, port, max_data_receive, on_receive=None)
 
 > Automatically connects to the server and begins listening in a background thread.
 
----
+#### Methods
 
-#### `send(data)`
+- **`send(data)`**  
+  Sends data (must be JSON-serializable) to the connected server.
+  ```python
+  client.send({"action": "jump", "player_id": 3})
+  ```
 
-Sends data to the connected server.
+- **`close()`**  
+  Closes the connection to the server.
 
-```python
-client.send({"action": "jump", "player_id": 3})
-```
-
-- **`data`**: Any picklable object to transmit to the server.
-
----
-
-#### Internal Methods (do not call manually)
-
-These methods are part of the internal operation of the server:
-
+#### Internal Methods (for internal use only, do not call directly)
 - `receive()`: Receives messages from the server and processes them using the callback function if provided.
-*Process function – not to be called manually.*
-
-```python
-client.receive()
-```
 
 ---
 
 ## Notes
 
-- Data is serialized using `pickle`. Avoid using this with untrusted sources.
+- Data is serialized using `json`. Only basic Python types (dict, list, str, int, float, bool, None) are supported.
 - Only TCP is supported in the current version.
-- All transmitted objects must be picklable (i.e., able to be serialized with `pickle`).
-- If `on_receive` on either the `Client` or `Server` is not set, the data sent/received will not be accessable to the user.
-- To install EPyNet, simply drag the EPyNet.py file into your working directory. Then on another script, simply write `import EPyNet`.
+- All transmitted objects must be JSON-serializable.
+- If `on_receive` on either the `Client` or `Server` is not set, received data will be printed to the console.
+- To install EPyNet, simply drag the EPyNet.py file into your working directory. Then in another script, write `from EPyNet import Server, Client`.
+
 ---
 
 ## Example Usage
