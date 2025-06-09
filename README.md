@@ -14,7 +14,7 @@
 
 ---
 
-## Classes & Functions
+## Classes, Functions & Variables
 
 ---
 
@@ -66,6 +66,10 @@ server.broadcast({"type": "event", "name": "game_start"})
 - Sends the object to every client currently connected.
 
 ---
+
+#### `C_sockets`
+A list containing connected clients, formatted as such:
+`(socket,(ip,port))`
 
 #### Internal Methods (do not call manually)
 
@@ -132,7 +136,7 @@ client.receive()
 - Data is serialized using `pickle`. Avoid using this with untrusted sources.
 - Only TCP is supported in the current version.
 - All transmitted objects must be picklable (i.e., able to be serialized with `pickle`).
-
+- If `on_receive` on either the `Client` or `Server` is not set, the data sent/received will not be accessable to the user.
 ---
 
 ## Example Usage
