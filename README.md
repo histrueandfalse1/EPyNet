@@ -6,9 +6,9 @@
 
 ## Overview
 
-- Built-in support for TCP connections (UDP planned)
-- Supports multiple clients using threads
-- Uses `pickle` for easy object serialization
+- Built-in support for TCP connections (UDP not currently supported)
+- Handles multiple clients using background threads
+- Uses `pickle` for Python object serialization
 - Callback-based data reception on both server and client
 - Simple interface for sending and broadcasting data
 
@@ -28,16 +28,16 @@
 Server(host, port, max_data_size, max_conn=5, mode="TCP", on_receive=None)
 ```
 
-| Parameter        | Type     | Description |
-|------------------|----------|-------------|
-| `host`           | `str`    | IP address to bind the server to (e.g., `"127.0.0.1"`) |
-| `port`           | `int`    | Port number to listen on |
-| `max_data_size`  | `int`    | Max size in bytes for incoming data |
-| `max_conn`       | `int`    | Max number of queued connections |
-| `mode`           | `str`    | Protocol mode (currently only `"TCP"` is supported) |
+| Parameter        | Type       | Description |
+|------------------|------------|-------------|
+| `host`           | `str`      | IP address to bind the server to (e.g., `"127.0.0.1"`) |
+| `port`           | `int`      | Port number to listen on |
+| `max_data_size`  | `int`      | Max size in bytes for incoming data |
+| `max_conn`       | `int`      | Max number of queued connections |
+| `mode`           | `str`      | Protocol mode (currently only `"TCP"` is supported) |
 | `on_receive`     | `callable` | Function called when data is received: `on_receive(data, client_address)` |
 
-> Starts listening for connections immediately by calling `accept_conns()`.
+> Automatically starts listening for connections in a background thread.
 
 ---
 
@@ -63,7 +63,19 @@ server.broadcast({"type": "event", "name": "game_start"})
 ```
 
 - **`data`**: A serializable Python object.
-- Great for notifying all clients of a shared event.
+- Sends the object to every client currently connected.
+
+---
+
+#### Internal Methods (do not call manually)
+
+These methods are part of the internal operation of the server:
+
+- `accept_conns(self)`: Starts a thread that accepts incoming client connections.  
+  *Process function – not required to be called manually.*
+
+- `handle_client(self, cs, ca)`: Handles communication with a connected client.  
+  *Process function – not required to be called manually.*
 
 ---
 
@@ -84,6 +96,8 @@ Client(host, port, max_data_receive, on_receive=None)
 | `max_data_receive`    | `int`      | Max size of data to receive at once |
 | `on_receive`          | `callable` | Optional callback: `on_receive(data)` |
 
+> Automatically connects to the server and begins listening in a background thread.
+
 ---
 
 #### `send(data)`
@@ -100,54 +114,50 @@ client.send({"action": "jump", "player_id": 3})
 
 #### `receive()`
 
-Listens for messages from the server and processes them.
+Receives messages from the server and processes them using the callback function if provided.
 
 ```python
 client.receive()
 ```
 
-- Runs an infinite loop waiting for data from the server.
+- This method runs automatically in a background thread.
 - If `on_receive` is set, it is called with the received data.
 - If no callback is set, data is printed to the console.
-- **Blocking**: run in a separate thread if the client needs to stay responsive.
-
-Example:
-
-```python
-import threading
-
-def handle_data(data):
-    print("Server said:", data)
-
-client = Client("localhost", 9999, 4096, on_receive=handle_data)
-threading.Thread(target=client.receive, daemon=True).start()
-```
+- **Do not call manually** unless you are running it in a custom thread.
 
 ---
 
-## ⚠️ Notes
+## Notes
 
-- Data is serialized using `pickle`. Be cautious when using `pickle` with untrusted input.
-- Currently only supports TCP sockets.
-- All communication must be with picklable Python objects.
+- Data is serialized using `pickle`. Avoid using this with untrusted sources.
+- Only TCP is supported in the current version.
+- All transmitted objects must be picklable (i.e., able to be serialized with `pickle`).
 
 ---
 
 ## Example Usage
 
-```python
-# Server-side
-def on_receive(data, address):
-    print(f"Received from {address}: {data}")
+### Server
 
-server = main.Server("localhost", 1234, max_data_size=4096, on_receive=on_receive)
-# Client-side
+```python
+from EPyNet import Server
+
+def on_receive(data, addr):
+    print(f"Received from {addr}: {data}")
+
+server = Server("127.0.0.1", 12345, max_data_size=4096, on_receive=on_receive)
 ```
 
+### Client
+
 ```python
-# Client-side
-client = Client("localhost", 1234, max_data_receive=4096)
-client.send({"message": "Hello, server!"})
+from EPyNet import Client
+
+def handle_server_message(data):
+    print("Received:", data)
+
+client = Client("127.0.0.1", 12345, max_data_receive=4096, on_receive=handle_server_message)
+client.send({"type": "message", "text": "Hello, server!"})
 ```
 
 ---
