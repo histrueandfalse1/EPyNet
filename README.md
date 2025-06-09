@@ -137,6 +137,7 @@ client.receive()
 - Only TCP is supported in the current version.
 - All transmitted objects must be picklable (i.e., able to be serialized with `pickle`).
 - If `on_receive` on either the `Client` or `Server` is not set, the data sent/received will not be accessable to the user.
+- To install EPyNet, simply drag the EPyNet.py file into your working directory. Then on another script, simply write `import EPyNet`.
 ---
 
 ## Example Usage
