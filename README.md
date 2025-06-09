@@ -140,7 +140,8 @@ threading.Thread(target=client.receive, daemon=True).start()
 def on_receive(data, address):
     print(f"Received from {address}: {data}")
 
-server = Server("localhost", 1234, max_data_size=4096, on_receive=on_receive)
+server = main.Server("localhost", 1234, max_data_size=4096, on_receive=on_receive)
+# Client-side
 ```
 
 ```python
