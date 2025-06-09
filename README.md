@@ -76,10 +76,10 @@ A list containing connected clients, formatted as such:
 These methods are part of the internal operation of the server:
 
 - `accept_conns(self)`: Starts a thread that accepts incoming client connections.  
-  *Process function – not required to be called manually.*
+  *Process function – not to be called manually.*
 
 - `handle_client(self, cs, ca)`: Handles communication with a connected client.  
-  *Process function – not required to be called manually.*
+  *Process function – not to be called manually.*
 
 ---
 
@@ -116,18 +116,16 @@ client.send({"action": "jump", "player_id": 3})
 
 ---
 
-#### `receive()`
+#### Internal Methods (do not call manually)
 
-Receives messages from the server and processes them using the callback function if provided.
+These methods are part of the internal operation of the server:
+
+- `receive()`: Receives messages from the server and processes them using the callback function if provided.
+*Process function – not to be called manually.*
 
 ```python
 client.receive()
 ```
-
-- This method runs automatically in a background thread.
-- If `on_receive` is set, it is called with the received data.
-- If no callback is set, data is printed to the console.
-- **Do not call manually** unless you are running it in a custom thread.
 
 ---
 
